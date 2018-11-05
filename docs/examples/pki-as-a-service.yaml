@@ -1,0 +1,64 @@
+---
+kind: RootCA
+name: root
+description: PKI-as-a-Service Root CA
+spec:
+  key_type: rsa
+  key_bits: 4096
+  ttl: 87600h
+  exclude_cn_from_sans: true
+  subject:
+    common_name: Root CA
+---
+kind: IntermediateCA
+name: intermediate
+description: PKI-as-a-Service Intermediate CA
+issuer: root
+spec:
+  type: internal
+  key_type: rsa
+  key_bits: 4096
+  ttl: 43800h
+  crl:
+    expiry: 2m
+  subject:
+    common_name: pki-ca-int
+  roles:
+  - name: yet-dot-org
+    config:
+      max_ttl: 2m
+      ttl: 2m
+      allow_any_name: true
+      generate_lease: true
+      client_flag: false
+      server_flag: true
+  policies:
+  - name: pki-int
+    policy: |
+      path "pki_int/issue/*" {
+      capabilities = ["create", "update"]
+      }
+
+      path "pki_int/certs" {
+      capabilities = ["list"]
+      }
+
+      path "pki_int/revoke" {
+      capabilities = ["create", "update"]
+      }
+
+      path "pki_int/tidy" {
+      capabilities = ["create", "update"]
+      }
+
+      path "pki/cert/ca" {
+      capabilities = ["read"]
+      }
+
+      path "auth/token/renew" {
+      capabilities = ["update"]
+      }
+
+      path "auth/token/renew-self" {
+      capabilities = ["update"]
+      }

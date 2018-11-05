@@ -1,0 +1,50 @@
+---
+language: python
+python: "3.6"
+sudo: required
+cache:
+  directories:
+    - $HOME/.cache/pip
+    - $HOME/.local/share/virtualenvs
+notifications:
+  email: false
+services:
+  - docker
+
+stages:
+  - lint
+  - scan
+  - test
+  - build
+
+before_install:
+  - sudo apt-get update -qq && apt-get -y --no-install-recommends install make
+  - sudo pip install pipenv --no-cache-dir --disable-pip-version-check
+
+install:
+  - make dev
+
+jobs:
+  include:
+    - stage: lint
+      script:
+        - pipenv shell
+        - make lint
+
+    - stage: scan
+      script:
+        - pipenv shell
+        - make scan
+
+    - stage: test
+      script:
+        - pipenv shell
+        - make test
+
+    - stage: build
+      script:
+        - pipenv shell
+        - make build
+
+after_success:
+  coveralls

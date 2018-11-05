@@ -1,0 +1,36 @@
+---
+kind: IntermediateCA
+name: test-intermediate-ca
+description: Intermediate Certificate Authority
+issuer: test-root-ca
+kv_backend: test-kv
+spec:
+  type: exported
+  key_type: rsa
+  key_bits: 4096
+  ttl: 43800h
+  crl:
+    expiry: 24h
+  subject:
+    common_name: Intermediate Certificate Authority
+    organization: E Corp
+    ou: Information Technology
+    country: US
+    province: NY
+    locality: NYC
+  roles:
+  - name: server
+    config:
+      max_ttl: 26298h
+      ttl: 17532h
+      allow_subdomains: true
+      allowed_domains:
+        - test.ecorp.com
+      client_flag: false
+      server_flag: true
+  policies:
+  - name: intermediate-ca-server-policy
+    policy: |
+      path "test-intermediate-ca/issue/server" {
+        capabilities = ["read", "update"]
+      }

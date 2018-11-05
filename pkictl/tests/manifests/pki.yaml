@@ -1,0 +1,153 @@
+---
+kind: RootCA
+name: pki/root-ca-1
+description: Root CA 1
+spec:
+  key_type: ec
+  key_bits: 384
+  ttl: '87600h'
+  exclude_cn_from_sans: true
+  subject:
+    common_name: Root Certificate Authority 1
+---
+kind: IntermediateCA
+name: pki/intermediate-ca-dev
+description: Intermediate CA for development
+issuer: pki/intermediate-ca-staging
+kv_backend: kv/intermediate-ca-dev
+spec:
+  type: exported
+  key_type: rsa
+  key_bits: 2048
+  ttl: 43800h
+  max_path_length: 1
+  subject:
+    common_name: Development Intermediate Certificate Authority
+  roles:
+  - name: client
+    config:
+      max_ttl: 26298h
+      ttl: 17532h
+      allow_subdomains: true
+      allowed_domains:
+        - dev.example.com
+      client_flag: true
+      server_flag: false
+  - name: server
+    config:
+      max_ttl: 26298h
+      ttl: 17532h
+      allow_subdomains: true
+      allowed_domains:
+        - dev.example.com
+      client_flag: false
+      server_flag: true
+  policies:
+  - name: intermediate-ca-dev-server-policy
+    policy: |
+      path "pki/intermediate-ca-dev/issue/server" {
+        capabilities = ["read", "update"]
+      }
+  - name: pki/intermediate-ca-dev-client-policy
+    policy: |
+      path "intermediate-ca-dev/issue/client" {
+        capabilities = ["read", "update"]
+      }
+---
+kind: IntermediateCA
+name: pki/intermediate-ca-production
+description: Intermediate CA for Production
+issuer: pki/root-ca-1
+spec:
+  type: internal
+  key_type: rsa
+  key_bits: 4096
+  ttl: 43800h
+  crl:
+    expiry: 48h
+  subject:
+    common_name: Production Intermediate Certificate Authority
+  roles:
+  - name: server
+    config:
+      max_ttl: 26298h
+      ttl: 17532h
+      allow_subdomains: true
+      allowed_domains:
+        - production.example.com
+      client_flag: false
+      server_flag: true
+  policies:
+  - name: intermediate-ca-production-server-policy
+    policy: |
+      path "pki/intermediate-ca-production/issue/server" {
+        capabilities = ["read", "update"]
+      }
+---
+kind: IntermediateCA
+name: pki/intermediate-ca-staging
+description: Intermediate CA for Staging
+issuer: pki/root-ca-2
+kv_backend: kv/intermediate-ca-staging
+spec:
+  type: exported
+  key_type: ec
+  key_bits: 384
+  ttl: 43800h
+  max_path_length: 1
+  subject:
+    common_name: Staging Intermediate Certificate Authority
+  roles:
+  - name: client
+    config:
+      max_ttl: 26298h
+      ttl: 17532h
+      allow_subdomains: true
+      allowed_domains:
+        - staging.example.com
+      client_flag: true
+      server_flag: false
+  - name: server
+    config:
+      max_ttl: 26298h
+      ttl: 17532h
+      allow_subdomains: true
+      allowed_domains:
+        - staging.example.com
+      client_flag: false
+      server_flag: true
+  policies:
+  - name: intermediate-ca-staging-server-policy
+    policy: |
+      path "pki/intermediate-ca-staging/issue/server" {
+        capabilities = ["read", "update"]
+      }
+  - name: intermediate-ca-staging-client-policy
+    policy: |
+      path "pki/intermediate-ca-staging/issue/client" {
+        capabilities = ["read", "update"]
+      }
+---
+kind: RootCA
+name: pki/root-ca-2
+description: Root CA 2
+spec:
+  key_type: rsa
+  key_bits: 4096
+  ttl: '87600h'
+  subject:
+    common_name: Root Certificate Authority 2
+---
+kind: KV
+name: kv/intermediate-ca-staging
+description: secrets for intermediate-ca-staging CA
+spec:
+  options:
+    version: 1
+---
+kind: KV
+name: kv/intermediate-ca-dev
+description: secrets for intermediate-ca-dev CA
+spec:
+  options:
+    version: 1

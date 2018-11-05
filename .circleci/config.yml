@@ -1,0 +1,67 @@
+---
+version: 2
+jobs:
+  test:
+    working_directory: ~/repo
+    docker:
+      - image: circleci/python:3.6.6
+
+    steps:
+      - checkout
+
+      - restore_cache:
+          keys:
+          - v0.1.0-deps-{{ .Branch }}-{{ checksum "Pipfile" }}
+
+      - run:
+          name: Install dependencies with Pipenv
+          command: |
+            make dev
+
+      - save_cache:
+          key: v0.1.0-deps-{{ .Branch }}-{{ checksum "Pipfile" }}
+          paths:
+            - "/home/circleci/.local/share/virtualenvs/"
+
+      - run:
+          name: Lint the codebase
+          command: |
+            pipenv run make lint
+
+      - run:
+          name: Run unit tests
+          command: |
+            pipenv run make test
+            pipenv run coveralls
+
+      - run:
+          name: Run end-to-end tests
+          command: |
+            sudo .circleci/setup-e2e.sh
+            pipenv run make e2e-test
+
+  build:
+    working_directory: ~/repo
+    docker:
+      - image: docker:17.05.0-ce-git
+
+    steps:
+      - checkout
+      - setup_remote_docker:
+          version: 17.05.0-ce
+
+      - run:
+          name: Build pkictl container image
+          command: |
+            apk update
+            apk add --no-cache make
+            make build-container
+
+workflows:
+  version: 2
+  test_and_build:
+    jobs:
+      - test
+      - build:
+          requires:
+            - test

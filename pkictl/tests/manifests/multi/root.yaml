@@ -1,0 +1,15 @@
+---
+kind: RootCA
+name: test-root-ca
+description: Test Root CA
+spec:
+  key_type: 'ec'
+  key_bits: 384
+  ttl: '87600h'
+  exclude_cn_from_sans: true
+  subject:
+    common_name: 'Test Root CA'
+    organization: 'Vault PKI LLC'
+    country: 'CA'
+    province: 'Ontario'
+    locality: 'Toronto'
