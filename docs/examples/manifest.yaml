@@ -42,6 +42,13 @@ spec:
         - demo.pkictl.com
       client_flag: false
       server_flag: true
+  - name: client
+    config:
+      max_ttl: 336h
+      ttl: 336h
+      allow_any_name: true
+      client_flag: true
+      server_flag: false
   policies:
   - name: demo-intermediate-ca-pkey
     policy: |
@@ -57,6 +64,14 @@ spec:
         capabilities = ["read", "update"]
       }
       path "demo-intermediate-ca/sign/server" {
+        capabilities = ["read", "update"]
+      }
+  - name: demo-intermediate-ca-client
+    policy: |
+      path "demo-intermediate-ca/issue/client" {
+        capabilities = ["read", "update"]
+      }
+      path "demo-intermediate-ca/sign/client" {
         capabilities = ["read", "update"]
       }
 ---

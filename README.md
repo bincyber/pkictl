@@ -120,6 +120,13 @@ Create a [manifest file](docs/examples/manifest.yaml):
             - demo.pkictl.com
           client_flag: false
           server_flag: true
+      - name: client
+        config:
+          max_ttl: 336h
+          ttl: 336h
+          allow_any_name: true
+          client_flag: true
+          server_flag: false
       policies:
       - name: demo-intermediate-ca-pkey
         policy: |
@@ -137,6 +144,14 @@ Create a [manifest file](docs/examples/manifest.yaml):
           path "demo-intermediate-ca/sign/server" {
             capabilities = ["read", "update"]
           }
+      - name: demo-intermediate-ca-client
+        policy: |
+          path "demo-intermediate-ca/issue/client" {
+            capabilities = ["read", "update"]
+          }
+          path "demo-intermediate-ca/sign/client" {
+            capabilities = ["read", "update"]
+          }
     ---
     kind: KV
     name: demo-kv-engine
@@ -146,11 +161,14 @@ Create a [manifest file](docs/examples/manifest.yaml):
         version: 1
 
 The above example will create:
-- a ECDSA-based [Root](https://www.vaultproject.io/api/secret/pki/index.html#generate-root) CA with a TTL of 2 years
-- an RSA-based [Intermediate](https://www.vaultproject.io/api/secret/pki/index.html#generate-intermediate) CA with a TTL of 1 year signed by the Root CA
-- a [Role](https://www.vaultproject.io/api/secret/pki/index.html#create-update-role) named `server` permitting the Intermediate CA to generate or sign TLS server certificates for any subdomains on demo.pkictl.com
+- an ECDSA-based [Root](https://www.vaultproject.io/api/secret/pki/index.html#generate-root) CA with a TTL of 2 years
+- a RSA-based [Intermediate](https://www.vaultproject.io/api/secret/pki/index.html#generate-intermediate) CA with a TTL of 1 year signed by the Root CA
+- a [Role](https://www.vaultproject.io/api/secret/pki/index.html#create-update-role) named `server` permitting the Intermediate CA to issue or sign TLS server certificates for any subdomains on demo.pkictl.com
+- a [Role](https://www.vaultproject.io/api/secret/pki/index.html#create-update-role) named `client` permitting the Intermediate CA to issue or sign TLS client certificates
 - a [Policy](https://www.vaultproject.io/docs/concepts/policies.html) mapped to the `server` role
+- a [Policy](https://www.vaultproject.io/docs/concepts/policies.html) mapped to the `client` role
 - a [Key/Value](https://www.vaultproject.io/api/secret/kv/kv-v1.html) engine to store the exported private key of the Intermediate CA
+- a [Policy](https://www.vaultproject.io/docs/concepts/policies.html) permitting retrieval of the exported private key from the KV engine
 
 Create PKI secrets from the YAML manifest file:
 
@@ -168,12 +186,14 @@ Create PKI secrets from the YAML manifest file:
     [*] pkictl - Set CRL configuration for CA: demo-intermediate-ca
     [*] pkictl - Stored private key for 'demo-intermediate-ca' in KV backend: demo-kv-engine
     [*] pkictl - Configured role 'server' for intermediate CA: demo-intermediate-ca
-    [*] pkictl - Configured policy 'demo-intermediate-ca-server' for intermediate CA: demo-intermediate-ca
+    [*] pkictl - Configured role 'client' for intermediate CA: demo-intermediate-ca
     [*] pkictl - Configured policy 'demo-intermediate-ca-pkey' for intermediate CA: demo-intermediate-ca
+    [*] pkictl - Configured policy 'demo-intermediate-ca-server' for intermediate CA: demo-intermediate-ca
+    [*] pkictl - Configured policy 'demo-intermediate-ca-client' for intermediate CA: demo-intermediate-ca
 
-Obtain a Vault token:
+Obtain a Vault token attached to the `demo-intermediate-ca-server` Policy:
 
-    $ vault token create -policy=demo-intermediate-ca-server -ttl=1h
+    $ VAULT_TOKEN=$(vault token create -policy=demo-intermediate-ca-client -ttl=1h -format json | jq -r .auth.client_token)
 
 Use this token to obtain a TLS server certificate and private key for web.demo.pkictl.com from the Intermediate CA:
 
@@ -188,9 +208,17 @@ Alternatively, you can generate a certificate signing request (CSR) and private 
 
 Vault will return the signed TLS server certificate along with the full chain (the certificates for the Root and Intermediate CA).
 
-Since `spec.type: exported`, the private key of this CA has been saved in the KV engine `demo-kv-engine`. A separate Vault token is required to retrieve it:
+Obtain a Vault token attached to the `demo-intermediate-ca-client` Policy:
 
-    $ vault token create -policy=demo-intermediate-ca-pkey -ttl=1m
+    $ VAULT_TOKEN=$(vault token create -policy=demo-intermediate-ca-client -ttl=1h -format json | jq -r .auth.client_token)
+
+Use this token to obtain a TLS client certificate and private key from the Intermediate CA:
+
+    $ vault write demo-intermediate-ca/issue/client common_name="example@demo.pkictl.com" ttl=24h
+
+Since `spec.type: exported`, the private key of this CA has been saved in the KV engine `demo-kv-engine`. A Vault token attached to the `demo-intermediate-ca-pkey` Policy is required to retrieve it:
+
+    $ VAULT_TOKEN=$(vault token create -policy=demo-intermediate-ca-pkey -ttl=1m -format json | jq -r .auth.client_token)
     $ vault kv get -version=1 demo-kv-engine/demo-intermediate-ca
 
 ### Documentation

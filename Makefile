@@ -21,6 +21,9 @@ dev:
 lint:
 	flake8 --statistics pkictl/*
 
+yaml-lint:
+	yamllint -c .circleci/.lint.yaml docs/examples/
+
 static-analysis:
 	mypy pkictl/*
 

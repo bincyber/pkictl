@@ -29,6 +29,11 @@ jobs:
             pipenv run make lint
 
       - run:
+          name: Lint the examples manifests
+          command: |
+            pipenv run make yaml-lint
+
+      - run:
           name: Run unit tests
           command: |
             pipenv run make test

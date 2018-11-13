@@ -7,6 +7,7 @@ name = "pypi"
 requests = "*"
 voluptuous = "*"
 PyYAML = "*"
+yamllint = "*"
 
 [dev-packages]
 bandit = "*"
@@ -18,6 +19,7 @@ mypy = "*"
 setuptools = "*"
 twine = "*"
 wheel = "*"
+yamllint = "*"
 
 [requires]
 python_version = "3.6"
