@@ -42,12 +42,7 @@ def main():
         # authentication token is required to talk to Vault
         vault_token = utils.get_from_environment('VAULT_TOKEN')
 
-        vault_client = VaultClient(
-            baseurl=args.baseurl,
-            token=vault_token,
-            debugging=args.debugging,
-            verify_ssl=verify_ssl
-        )
+        vault_client = VaultClient(baseurl=args.baseurl, token=vault_token, debugging=args.debugging, verify_ssl=verify_ssl)
 
         path = os.path.abspath(os.path.expanduser(args.file))
 

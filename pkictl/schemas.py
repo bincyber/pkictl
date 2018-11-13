@@ -60,6 +60,7 @@ IntermediateCASchema = Schema({
                 Optional('allow_ip_sans'): bool,
                 Optional('enforce_hostnames'): bool,
                 Optional('generate_lease'): bool,
+                Optional('no_store'): bool,
                 Optional('allowed_domains'): [Match(r'^(?![-.])[a-zA-Z0-9-\.]+(?<![.-])$')],
             }
         }],

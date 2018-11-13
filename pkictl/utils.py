@@ -36,7 +36,6 @@ def get_manifest_files(directory: str) -> List[str]:
     return glob.glob(f'{directory}/{pattern}')
 
 
-# this function can be converted to accept a list of files, iterate over them and return a list of documents
 def read_manifest_file(path: str) -> List[dict]:
     try:
         with open(path, 'r') as f:
@@ -64,11 +63,12 @@ def get_validated_manifests(documents: List[dict]=[]) -> Tuple[List[dict], List[
             roots.append(schemas.RootCASchema(i))
 
         elif schema_type == 'IntermediateCA':
-            catype     = i['spec'].get('type')
-            kv_backend = i.get('kv_backend', None)
+            ca_name     = i['name']
+            ca_type     = i['spec'].get('type')
+            kv_backend  = i.get('kv_backend', None)
 
-            if catype == 'exported' and kv_backend is None:
-                exit_with_message(f"kv_backend not defined for exported intermediate CA: {i['name']}")
+            if ca_type == 'exported' and kv_backend is None:
+                exit_with_message(f"kv_backend not defined for exported intermediate CA: {ca_name}")
 
             intermediates.append(schemas.IntermediateCASchema(i))
 

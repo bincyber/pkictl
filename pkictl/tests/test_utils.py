@@ -113,6 +113,24 @@ class TestUtils(unittest.TestCase):
         self.assertEqual(len(intermediates), 3)
         self.assertIsInstance(kv_backends, list)
 
+    def test_get_validated_manifests_missing_kv_backend(self):
+        d = [{
+            'kind': 'IntermediateCA',
+            'name': 'test-intermediate-ca',
+            'spec': {
+                'type': 'exported'
+            }
+        }]
+        with self.assertRaises(SystemExit) as e:
+            utils.get_validated_manifests(d)
+        self.assertEqual(e.exception.args[0], "[-] pkictl - Error: kv_backend not defined for exported intermediate CA: test-intermediate-ca")
+
+    def test_get_validated_manifests_unsupported(self):
+        d = [{'kind': 'AWS'}]
+        with self.assertRaises(SystemExit) as e:
+            utils.get_validated_manifests(d)
+        self.assertEqual(e.exception.args[0], "[-] pkictl - Error: Unsupported schema defined in manifest file")
+
     def test_write_vault_master_keys(self):
         with tempfile.NamedTemporaryFile() as t:
             m = ["aaa", "bbb", "ccc"]

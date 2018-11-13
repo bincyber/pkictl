@@ -1,6 +1,6 @@
 from setuptools import setup
 
-version = "0.1.0"
+version = "0.1.2"
 
 requirements = [
     'PyYAML',
@@ -18,7 +18,7 @@ setup(name='pkictl',
     long_description_content_type="text/markdown",
     url='http://github.com/bincyber/pkictl',
     author='@bincyber',
-    license='AGPL',
+    license='MPL',
     keywords="vault pki kubernetes public key infrastructure security",
     packages=['pkictl'],
     python_requires='>=3.6',
@@ -31,7 +31,7 @@ setup(name='pkictl',
         'Intended Audience :: Developers',
         'Intended Audience :: System Administrators',
         'Natural Language :: English',
-        'License :: OSI Approved :: GNU Affero General Public License v3',
+        'License :: OSI Approved :: Mozilla Public License 2.0 (MPL 2.0)',
         'Operating System :: MacOS',
         'Operating System :: POSIX',
         'Operating System :: Unix',

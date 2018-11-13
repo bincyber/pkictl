@@ -25,8 +25,8 @@ def cli():
 
     init.add_argument('-u', '--url', dest='baseurl', type=str, metavar='URL',
         action='store', required=False, help='the URL of the Vault server')
-    init.add_argument('--tls-skip-verify', dest='tls_skip_verify', action='store_true',
-        default=False, help="disable verification of the Vault server's SSL certificate")
+    init.add_argument('--tls-skip-verify', nargs='?', dest='tls_skip_verify',
+        const=True, default=None, help="disable verification of the Vault server's SSL certificate")
 
     apply = subparsers.add_parser(
         'apply',
@@ -38,7 +38,7 @@ def cli():
         action='store', required=False, help='the URL of the Vault server')
     apply.add_argument('-f', '--file', dest='file', type=str,
         action='store', required=True, help='the path to the configuration manifest(s)')
-    apply.add_argument('--tls-skip-verify', dest='tls_skip_verify', action='store_true',
-        default=False, help="disable verification of the Vault server's SSL certificate")
+    apply.add_argument('--tls-skip-verify', nargs='?', dest='tls_skip_verify',
+        const=True, default=None, help="disable verification of the Vault server's SSL certificate")
 
     return parser

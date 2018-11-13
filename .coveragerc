@@ -1,2 +1,2 @@
 [run]
-omit = pkictl/tests/*,setup.py
+omit = setup.py,pkictl/tests/*,pkictl/pkictl.py

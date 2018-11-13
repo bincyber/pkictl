@@ -25,6 +25,6 @@ class TestCLI(unittest.TestCase):
         subcommand = 'apply'
 
         t = self.parser.parse_args([subcommand, '-u', self.baseurl, '-f', 'test.yaml'])
-        r = argparse.Namespace(baseurl=self.baseurl, debugging=False, subcommand=subcommand, tls_skip_verify=False, file='test.yaml')
+        r = argparse.Namespace(baseurl=self.baseurl, debugging=False, subcommand=subcommand, tls_skip_verify=None, file='test.yaml')
 
         self.assertEqual(r, t)

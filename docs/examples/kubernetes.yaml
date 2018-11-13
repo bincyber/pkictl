@@ -1,0 +1,161 @@
+---
+kind: KV
+name: kv/kube-ca
+description: exported PKI secrets for the Kubernetes CA
+spec:
+  options:
+    version: 1
+---
+kind: KV
+name: kv/kube-fp-ca
+description: exported PKI secrets for the Kubernetes Front Proxy CA
+spec:
+  options:
+    version: 1
+---
+kind: RootCA
+name: pki/kube-root-ca
+description: Kubernetes Root CA
+spec:
+  key_type: rsa
+  key_bits: 4096
+  ttl: '87600h'
+  exclude_cn_from_sans: true
+  subject:
+    common_name: Kubernetes Root Certificate Authority
+---
+kind: IntermediateCA
+name: pki/etcd-ca
+description: Intermediate CA for etcd
+issuer: pki/kube-root-ca
+spec:
+  type: internal
+  key_type: rsa
+  key_bits: 2048
+  ttl: 43800h
+  subject:
+    common_name: etcd Certificate Authority
+  roles:
+  - name: peer
+    config:
+      max_ttl: 26298h
+      ttl: 17532h
+      allow_subdomains: true
+      allowed_domains:
+        - etcd.example.com
+      client_flag: true
+      server_flag: true
+  - name: server
+    config:
+      max_ttl: 26298h
+      ttl: 17532h
+      allow_subdomains: true
+      allowed_domains:
+        - etcd.example.com
+      client_flag: false
+      server_flag: true
+  - name: client
+    config:
+      max_ttl: 26298h
+      ttl: 17532h
+      allow_any_name: true
+      client_flag: true
+      server_flag: false
+  policies:
+  - name: etcd-ca-server-policy
+    policy: |
+      path "pki/etcd-ca/issue/peer" {
+        capabilities = ["read", "update"]
+      }
+      path "pki/etcd-ca/sign/peer" {
+        capabilities = ["read", "update"]
+      }
+      path "pki/etcd-ca/issue/server" {
+        capabilities = ["read", "update"]
+      }
+      path "pki/etcd-ca/sign/server" {
+        capabilities = ["read", "update"]
+      }
+      path "sys/capabilities-self" {
+        capabilities = ["create", "update"]
+      }
+  - name: etcd-ca-client-policy
+    policy: |
+      path "pki/etcd-ca/issue/client" {
+        capabilities = ["read", "update"]
+      }
+      path "pki/etcd-ca/sign/client" {
+        capabilities = ["read", "update"]
+      }
+      path "sys/capabilities-self" {
+        capabilities = ["create", "update"]
+      }
+---
+kind: IntermediateCA
+name: pki/kube-ca
+description: Kubernetes CA
+issuer: pki/kube-root-ca
+kv_backend: kv/kube-ca
+spec:
+  type: exported
+  key_type: rsa
+  key_bits: 4096
+  ttl: 43800h
+  subject:
+    common_name: Kubernetes Certificate Authority
+  policies:
+  - name: kv-kube-ca-policy
+    policy: |
+      path "kv/kube-ca/*" {
+        capabilities = ["list"]
+      }
+      path "kv/kube-ca/pki/kube-ca" {
+        capabilities = ["read"]
+      }
+      path "sys/capabilities-self" {
+        capabilities = ["create", "update"]
+      }
+---
+kind: IntermediateCA
+name: pki/kube-fp-ca
+description: Kubernetes Front Proxy CA
+issuer: pki/kube-root-ca
+kv_backend: kv/kube-fp-ca
+spec:
+  type: exported
+  key_type: rsa
+  key_bits: 4096
+  ttl: 43800h
+  subject:
+    common_name: Kubernetes Front Proxy Certificate Authority
+  roles:
+  - name: client
+    config:
+      max_ttl: 26298h
+      ttl: 17532h
+      allow_any_name: true
+      client_flag: true
+      server_flag: false
+  policies:
+  - name: kv-kube-fp-ca-policy
+    policy: |
+      path "kv/kube-fp-ca/*" {
+        capabilities = ["list"]
+      }
+      path "kv/kube-fp-ca/pki/kube-fp-ca" {
+        capabilities = ["read"]
+      }
+      path "sys/capabilities-self" {
+        capabilities = ["create", "update"]
+      }
+  - name: kube-fp-ca-client-policy
+    policy: |
+      path "pki/kube-fp-ca/issue/client" {
+        capabilities = ["read", "update"]
+      }
+      path "pki/kube-fp-ca/sign/client" {
+        capabilities = ["read", "update"]
+      }
+      path "sys/capabilities-self" {
+        capabilities = ["create", "update"]
+      }

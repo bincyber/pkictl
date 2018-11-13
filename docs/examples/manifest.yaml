@@ -1,0 +1,68 @@
+---
+kind: RootCA
+name: demo-root-ca
+description: pkictl demo Root CA
+spec:
+  key_type: ec
+  key_bits: 384
+  ttl: 17532h
+  exclude_cn_from_sans: true
+  subject:
+    common_name: Demo Root CA
+    organization: pkictl
+    ou: README Demo
+    country: US
+    locality: San Francisco
+    province: California
+---
+kind: IntermediateCA
+name: demo-intermediate-ca
+description: pkictl demo Intermediate CA
+issuer: demo-root-ca
+kv_backend: demo-kv-engine
+spec:
+  type: exported
+  key_type: rsa
+  key_bits: 4096
+  ttl: 8766h
+  subject:
+    common_name: Demo Intermediate CA
+    organization: pkictl
+    ou: README Demo
+    country: US
+    locality: San Francisco
+    province: California
+  roles:
+  - name: server
+    config:
+      max_ttl: 8766h
+      ttl: 8766h
+      allow_subdomains: true
+      allowed_domains:
+        - demo.pkictl.com
+      client_flag: false
+      server_flag: true
+  policies:
+  - name: demo-intermediate-ca-pkey
+    policy: |
+      path "demo-kv-engine" {
+        capabilities = ["list"]
+      }
+      path "demo-kv-engine/demo-intermediate-ca" {
+        capabilities = ["read"]
+      }
+  - name: demo-intermediate-ca-server
+    policy: |
+      path "demo-intermediate-ca/issue/server" {
+        capabilities = ["read", "update"]
+      }
+      path "demo-intermediate-ca/sign/server" {
+        capabilities = ["read", "update"]
+      }
+---
+kind: KV
+name: demo-kv-engine
+description: pkictl demo KV v1 engine
+spec:
+  options:
+    version: 1

@@ -1,7 +1,7 @@
 # pkictl
 
-[![Python](https://img.shields.io/badge/Python-3.6-blue.svg)](#)
-[![Version](https://img.shields.io/badge/version-0.1.0-green.svg)](#)
+[![Python](https://img.shields.io/badge/Python-3.6+-blue.svg)](#)
+[![Version](https://img.shields.io/badge/version-0.1.2-green.svg)](#)
 [![License](https://img.shields.io/badge/license-MPL-blue.svg)](https://www.gnu.org/licenses/agpl-3.0.en.html)
 [![Coverage Status](https://coveralls.io/repos/github/bincyber/pkictl/badge.svg?branch=master)](https://coveralls.io/github/bincyber/pkictl?branch=master)
 [![CircleCI](https://circleci.com/gh/bincyber/pkictl.svg?style=svg)](https://circleci.com/gh/bincyber/pkictl)
@@ -16,7 +16,7 @@ _pkictl_ is inspired by [_kubectl_](https://kubernetes.io/docs/reference/kubectl
 
 _pkictl_ uses the Vault HTTP API to mount [PKI secrets engines](https://www.vaultproject.io/docs/secrets/pki/index.html) for Root and Intermediate CAs. Intermediate CAs can be signed by a Root CA or other Intermediate CAs. Roles and Policies can be defined in the YAML file for Intermediate CAs.
 
-The [Key/Value secrets engine](https://www.vaultproject.io/docs/secrets/kv/index.html) is also used to store the private keys of Intermediate CAs that are configured for export (ie. `catype: exported`).
+The [Key/Value secrets engine](https://www.vaultproject.io/docs/secrets/kv/index.html) is also used to store the private keys of Intermediate CAs that are configured for export (ie. `spec.type: exported`).
 
 
 ## Installation
@@ -74,9 +74,7 @@ Initializing and unsealing the Vault server this way is only provided as a conve
 
 A YAML manifest file is used to define Root and Intermediate CAs, Key/Value engines, roles and policies.
 
-Create a manifest file:
-
-	$ vim manifest.yaml
+Create a [manifest file](docs/examples/manifest.yaml):
 
     ---
     kind: RootCA
@@ -123,6 +121,14 @@ Create a manifest file:
           client_flag: false
           server_flag: true
       policies:
+      - name: demo-intermediate-ca-pkey
+        policy: |
+          path "demo-kv-engine" {
+            capabilities = ["list"]
+          }
+          path "demo-kv-engine/demo-intermediate-ca" {
+            capabilities = ["read"]
+          }
       - name: demo-intermediate-ca-server
         policy: |
           path "demo-intermediate-ca/issue/server" {
@@ -139,17 +145,16 @@ Create a manifest file:
       options:
         version: 1
 
-
 The above example will create:
-- a [Root](https://www.vaultproject.io/api/secret/pki/index.html#generate-root) CA with a TTL of 2 years
-- an [Intermediate](https://www.vaultproject.io/api/secret/pki/index.html#generate-intermediate) CA with a TTL of 1 year signed by the Root CA
-- a [Role](https://www.vaultproject.io/api/secret/pki/index.html#create-update-role) named _server_ permitting the Intermediate CA to generate or sign TLS server certificates for any subdomains on demo.pkictl.com
-- a [Policy](https://www.vaultproject.io/docs/concepts/policies.html) mapped to the _server_ role
+- a ECDSA-based [Root](https://www.vaultproject.io/api/secret/pki/index.html#generate-root) CA with a TTL of 2 years
+- an RSA-based [Intermediate](https://www.vaultproject.io/api/secret/pki/index.html#generate-intermediate) CA with a TTL of 1 year signed by the Root CA
+- a [Role](https://www.vaultproject.io/api/secret/pki/index.html#create-update-role) named `server` permitting the Intermediate CA to generate or sign TLS server certificates for any subdomains on demo.pkictl.com
+- a [Policy](https://www.vaultproject.io/docs/concepts/policies.html) mapped to the `server` role
 - a [Key/Value](https://www.vaultproject.io/api/secret/kv/kv-v1.html) engine to store the exported private key of the Intermediate CA
 
 Create PKI secrets from the YAML manifest file:
 
-    $ pkictl apply -u https://localhost:8200 -f makmanifest.yaml
+    $ pkictl apply -u https://localhost:8200 -f manifest.yaml
 
     [*] pkictl - the Vault server has been initialized and is not sealed
     [*] pkictl - Enabled KV backend: demo-kv-engine
@@ -164,6 +169,7 @@ Create PKI secrets from the YAML manifest file:
     [*] pkictl - Stored private key for 'demo-intermediate-ca' in KV backend: demo-kv-engine
     [*] pkictl - Configured role 'server' for intermediate CA: demo-intermediate-ca
     [*] pkictl - Configured policy 'demo-intermediate-ca-server' for intermediate CA: demo-intermediate-ca
+    [*] pkictl - Configured policy 'demo-intermediate-ca-pkey' for intermediate CA: demo-intermediate-ca
 
 Obtain a Vault token:
 
@@ -175,10 +181,17 @@ Use this token to obtain a TLS server certificate and private key for web.demo.p
 
 Alternatively, you can generate a certificate signing request (CSR) and private key locally and have the CSR signed by the Intermediate CA:
 
-    $ openssl req -batch -nodes -sha256 -new -newkey rsa:2048 -keyout web.demo.pkictl.com.key -out web.demo.pkictl.com.csr -subj '/CN=web.demo.pkictl.com/'
+    $ openssl req -batch -nodes -sha256 -new -newkey rsa:2048 \
+      -keyout web.demo.pkictl.com.key -out web.demo.pkictl.com.csr -subj '/CN=web.demo.pkictl.com/'
+
     $ vault write demo-intermediate-ca/sign/server csr=@web.demo.pkictl.com.csr ttl=2160h
 
 Vault will return the signed TLS server certificate along with the full chain (the certificates for the Root and Intermediate CA).
+
+Since `spec.type: exported`, the private key of this CA has been saved in the KV engine `demo-kv-engine`. A separate Vault token is required to retrieve it:
+
+    $ vault token create -policy=demo-intermediate-ca-pkey -ttl=1m
+    $ vault kv get -version=1 demo-kv-engine/demo-intermediate-ca
 
 ### Documentation
 
@@ -188,7 +201,7 @@ For documentation and additional examples, see the [docs](https://github.com/bin
 
 [nose2](http://nose2.readthedocs.io/en/latest/) is used for testing. Tests are located in `pkictl/tests`.
 
-To run the test suite:
+To run the unit tests:
 
     $ make test
 
