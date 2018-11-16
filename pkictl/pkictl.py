@@ -61,10 +61,10 @@ def main():
         if sealed:
             sys.exit(1)
 
-        roots, intermediates, kvbackends = utils.get_validated_manifests(documents)
+        roots, intermediates, kv_engines = utils.get_validated_manifests(documents)
 
         # mount KV engines
-        for kve in kvbackends:
+        for kve in kv_engines:
             kvengine = KeyValueEngine(args.baseurl, kve)
             vault_client.mount_kv_engine(kvengine)
 

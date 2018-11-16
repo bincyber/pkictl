@@ -10,8 +10,9 @@ Create the YAML manifest file:
 
     ---
     kind: RootCA
-    name: root
-    description: PKI-as-a-Service Root CA
+    metadata:
+      name: root
+      description: PKI-as-a-Service Root CA
     spec:
       key_type: rsa
       key_bits: 4096
@@ -21,9 +22,10 @@ Create the YAML manifest file:
         common_name: Root CA
     ---
     kind: IntermediateCA
-    name: intermediate
-    description: PKI-as-a-Service Intermediate CA
-    issuer: root
+    metadata:
+      name: intermediate
+      description: PKI-as-a-Service Intermediate CA
+      issuer: root
     spec:
       type: internal
       key_type: rsa

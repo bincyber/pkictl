@@ -1,9 +1,10 @@
 ---
 kind: IntermediateCA
-name: test-intermediate-ca
-description: Intermediate Certificate Authority
-issuer: test-root-ca
-kv_backend: test-kv
+metadata:
+  name: test-intermediate-ca
+  description: Intermediate Certificate Authority
+  issuer: test-root-ca
+  kv_engine: test-kv
 spec:
   type: exported
   key_type: rsa

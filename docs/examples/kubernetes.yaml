@@ -1,21 +1,24 @@
 ---
 kind: KV
-name: kv/kube-ca
-description: exported PKI secrets for the Kubernetes CA
+metadata:
+  name: kv/kube-ca
+  description: exported PKI secrets for the Kubernetes CA
 spec:
   options:
     version: 1
 ---
 kind: KV
-name: kv/kube-fp-ca
-description: exported PKI secrets for the Kubernetes Front Proxy CA
+metadata:
+  name: kv/kube-fp-ca
+  description: exported PKI secrets for the Kubernetes Front Proxy CA
 spec:
   options:
     version: 1
 ---
 kind: RootCA
-name: pki/kube-root-ca
-description: Kubernetes Root CA
+metadata:
+  name: pki/kube-root-ca
+  description: Kubernetes Root CA
 spec:
   key_type: rsa
   key_bits: 4096
@@ -25,9 +28,10 @@ spec:
     common_name: Kubernetes Root Certificate Authority
 ---
 kind: IntermediateCA
-name: pki/etcd-ca
-description: Intermediate CA for etcd
-issuer: pki/kube-root-ca
+metadata:
+  name: pki/etcd-ca
+  description: Intermediate CA for etcd
+  issuer: pki/kube-root-ca
 spec:
   type: internal
   key_type: rsa
@@ -92,10 +96,11 @@ spec:
       }
 ---
 kind: IntermediateCA
-name: pki/kube-ca
-description: Kubernetes CA
-issuer: pki/kube-root-ca
-kv_backend: kv/kube-ca
+metadata:
+  name: pki/kube-ca
+  description: Kubernetes CA
+  issuer: pki/kube-root-ca
+  kv_engine: kv/kube-ca
 spec:
   type: exported
   key_type: rsa
@@ -117,10 +122,11 @@ spec:
       }
 ---
 kind: IntermediateCA
-name: pki/kube-fp-ca
-description: Kubernetes Front Proxy CA
-issuer: pki/kube-root-ca
-kv_backend: kv/kube-fp-ca
+metadata:
+  name: pki/kube-fp-ca
+  description: Kubernetes Front Proxy CA
+  issuer: pki/kube-root-ca
+  kv_engine: kv/kube-fp-ca
 spec:
   type: exported
   key_type: rsa

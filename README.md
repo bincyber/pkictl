@@ -1,7 +1,7 @@
 # pkictl
 
 [![Python](https://img.shields.io/badge/Python-3.6+-blue.svg)](#)
-[![Version](https://img.shields.io/badge/version-0.1.2-green.svg)](#)
+[![Version](https://img.shields.io/badge/version-0.2.0-green.svg)](#)
 [![License](https://img.shields.io/badge/license-MPL-blue.svg)](https://www.gnu.org/licenses/agpl-3.0.en.html)
 [![Coverage Status](https://coveralls.io/repos/github/bincyber/pkictl/badge.svg?branch=master)](https://coveralls.io/github/bincyber/pkictl?branch=master)
 [![CircleCI](https://circleci.com/gh/bincyber/pkictl.svg?style=svg)](https://circleci.com/gh/bincyber/pkictl)
@@ -78,8 +78,9 @@ Create a [manifest file](docs/examples/manifest.yaml):
 
     ---
     kind: RootCA
-    name: demo-root-ca
-    description: pkictl demo Root CA
+    metadata:
+      name: demo-root-ca
+      description: pkictl demo Root CA
     spec:
       key_type: ec
       key_bits: 384
@@ -94,10 +95,11 @@ Create a [manifest file](docs/examples/manifest.yaml):
         province: California
     ---
     kind: IntermediateCA
-    name: demo-intermediate-ca
-    description: pkictl demo Intermediate CA
-    issuer: demo-root-ca
-    kv_backend: demo-kv-engine
+    metadata:
+      name: demo-intermediate-ca
+      description: pkictl demo Intermediate CA
+      issuer: demo-root-ca
+      kv_backend: demo-kv-engine
     spec:
       type: exported
       key_type: rsa
@@ -154,8 +156,9 @@ Create a [manifest file](docs/examples/manifest.yaml):
           }
     ---
     kind: KV
-    name: demo-kv-engine
-    description: pkictl demo KV v1 engine
+    metadata:
+      name: demo-kv-engine
+      description: pkictl demo KV v1 engine
     spec:
       options:
         version: 1

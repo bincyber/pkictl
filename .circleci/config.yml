@@ -29,7 +29,7 @@ jobs:
             pipenv run make lint
 
       - run:
-          name: Lint the examples manifests
+          name: Lint the example manifests
           command: |
             pipenv run make yaml-lint
 
@@ -44,6 +44,16 @@ jobs:
           command: |
             sudo .circleci/setup-e2e.sh
             pipenv run make e2e-test
+
+      - run:
+          name: Run static analysis with mypy
+          command: |
+            pipenv run make static-analysis
+
+      - run:
+          name: Scan the codebase for security issues with bandit
+          command: |
+            pipenv run make scan
 
   build:
     working_directory: ~/repo

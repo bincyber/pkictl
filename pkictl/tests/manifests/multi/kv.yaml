@@ -1,7 +1,8 @@
 ---
 kind: KV
-name: test-kv
-description: KV v1 engine for testing
+metadata:
+  name: test-kv
+  description: KV v1 engine for testing
 spec:
   options:
     version: 1

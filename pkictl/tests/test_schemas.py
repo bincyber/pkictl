@@ -10,8 +10,10 @@ class TestSchemas(unittest.TestCase):
 
         test_data = {
             'kind': 'RootCA',
-            'name': 'test-root-ca',
-            'description': 'Test Root CA',
+            'metadata': {
+                'name': 'test-root-ca',
+                'description': 'Test Root CA'
+            },
             'spec': {
                 'key_type': 'rsa',
                 'key_bits': 2048,
@@ -28,8 +30,10 @@ class TestSchemas(unittest.TestCase):
 
         test_data = {
             'kind': 'RootCA',
-            'name': 'test-root-ca',
-            'description': 'Test Root CA',
+            'metadata': {
+                'name': 'test-root-ca',
+                'description': 'Test Root CA'
+            },
             'spec': {
                 'key_type': 'rsa',
                 'key_bits': 4096,
@@ -43,9 +47,11 @@ class TestSchemas(unittest.TestCase):
 
         test_data = {
             'kind': 'IntermediateCA',
-            'name': 'test-intermediate-ca-1',
-            'description': 'Test Intermediate CA 1',
-            'issuer': 'test-root-ca',
+            'metadata': {
+                'name': 'test-intermediate-ca-1',
+                'description': 'Test Intermediate CA 1',
+                'issuer': 'test-root-ca'
+            },
             'spec': {
                 'type': 'internal',
                 'key_type': 'rsa',
@@ -77,9 +83,11 @@ class TestSchemas(unittest.TestCase):
 
         test_data = {
             'kind': 'IntermediateCA',
-            'name': 'test-intermediate-ca-2',
-            'description': 'Test Intermediate CA 2',
-            'issuer': 'test-root-ca',
+            'metadata': {
+                'name': 'test-intermediate-ca-2',
+                'description': 'Test Intermediate CA 2',
+                'issuer': 'test-root-ca'
+            },
             'spec': {
                 'type': 'exported',
                 'key_type': 'ec',
@@ -114,9 +122,11 @@ class TestSchemas(unittest.TestCase):
 
         test_data = {
             'kind': 'IntermediateCA',
-            'name': 'test-intermediate-ca',
-            'description': 'Test Intermediate CA',
-            'issuer': 'test-root-ca',
+            'metadata': {
+                'name': 'test-intermediate-ca',
+                'description': 'Test Intermediate CA',
+                'issuer': 'test-root-ca'
+            },
             'spec': {
                 'type': 'internal',
                 'key_type': 'ec',
@@ -160,8 +170,10 @@ class TestSchemas(unittest.TestCase):
 
         test_data = {
             'kind': 'KV',
-            'name': 'test-kv-engine',
-            'description': 'Test KV engine',
+            'metadata': {
+                'name': 'test-kv-engine',
+                'description': 'Test KV engine'
+            },
             'spec': {
                 'config': {
                     'default_lease_ttl': '100h'
@@ -178,8 +190,10 @@ class TestSchemas(unittest.TestCase):
 
         test_data = {
             'kind': 'KV',
-            'name': 'test-kv-engine',
-            'description': 'Test KV engine',
+            'metadata': {
+                'name': 'test-kv-engine',
+                'description': 'Test KV engine'
+            }
         }
 
         with self.assertRaises(voluptuous.MultipleInvalid):

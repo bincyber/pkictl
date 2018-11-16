@@ -5,8 +5,8 @@ class CertificateAuthority:
     def __init__(self, baseurl, manifest):
         self.baseurl = baseurl
         self.dict = manifest
-        self.name = manifest['name']
-        self.description = manifest['description']
+        self.name = manifest['metadata']['name']
+        self.description = manifest['metadata']['description']
 
     @property
     def spec(self):
@@ -56,15 +56,15 @@ class IntermediateCA(CertificateAuthority):
 
     @property
     def issuer(self):
-        return self.dict['issuer']
+        return self.dict['metadata']['issuer']
+
+    @property
+    def kv_engine(self):
+        return self.dict['metadata']['kv_engine']
 
     @property
     def catype(self):
         return self.spec['type']
-
-    @property
-    def kv_backend(self):
-        return self.dict['kv_backend']
 
     @property
     def csr(self):
@@ -107,8 +107,8 @@ class IntermediateCA(CertificateAuthority):
         return urljoin(self.baseurl, f"/v1/{self.name}/intermediate/set-signed")
 
     @property
-    def kv_backend_url(self):
-        return urljoin(self.baseurl, f"/v1/{self.kv_backend}/{self.name}")
+    def kv_engine_url(self):
+        return urljoin(self.baseurl, f"/v1/{self.kv_engine}/{self.name}")
 
     @property
     def spec(self):
@@ -143,14 +143,14 @@ class KeyValueEngine:
     def __init__(self, baseurl, manifest):
         self.baseurl = baseurl
         self.dict = manifest
-        self.name = manifest['name']
+        self.name = manifest['metadata']['name']
 
     @property
     def spec(self):
         spec = self.dict['spec'].copy()
         spec.update({
             'type': self.dict['kind'].lower(),
-            'description': self.dict['description']
+            'description': self.dict['metadata']['description']
         })
         return spec
 

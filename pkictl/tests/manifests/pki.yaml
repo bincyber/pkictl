@@ -1,7 +1,8 @@
 ---
 kind: RootCA
-name: pki/root-ca-1
-description: Root CA 1
+metadata:
+  name: pki/root-ca-1
+  description: Root CA 1
 spec:
   key_type: ec
   key_bits: 384
@@ -11,10 +12,11 @@ spec:
     common_name: Root Certificate Authority 1
 ---
 kind: IntermediateCA
-name: pki/intermediate-ca-dev
-description: Intermediate CA for development
-issuer: pki/intermediate-ca-staging
-kv_backend: kv/intermediate-ca-dev
+metadata:
+  name: pki/intermediate-ca-dev
+  description: Intermediate CA for development
+  issuer: pki/intermediate-ca-staging
+  kv_engine: kv/intermediate-ca-dev
 spec:
   type: exported
   key_type: rsa
@@ -55,9 +57,10 @@ spec:
       }
 ---
 kind: IntermediateCA
-name: pki/intermediate-ca-production
-description: Intermediate CA for Production
-issuer: pki/root-ca-1
+metadata:
+  name: pki/intermediate-ca-production
+  description: Intermediate CA for Production
+  issuer: pki/root-ca-1
 spec:
   type: internal
   key_type: rsa
@@ -85,10 +88,11 @@ spec:
       }
 ---
 kind: IntermediateCA
-name: pki/intermediate-ca-staging
-description: Intermediate CA for Staging
-issuer: pki/root-ca-2
-kv_backend: kv/intermediate-ca-staging
+metadata:
+  name: pki/intermediate-ca-staging
+  description: Intermediate CA for Staging
+  issuer: pki/root-ca-2
+  kv_engine: kv/intermediate-ca-staging
 spec:
   type: exported
   key_type: ec
@@ -129,8 +133,9 @@ spec:
       }
 ---
 kind: RootCA
-name: pki/root-ca-2
-description: Root CA 2
+metadata:
+  name: pki/root-ca-2
+  description: Root CA 2
 spec:
   key_type: rsa
   key_bits: 4096
@@ -139,15 +144,17 @@ spec:
     common_name: Root Certificate Authority 2
 ---
 kind: KV
-name: kv/intermediate-ca-staging
-description: secrets for intermediate-ca-staging CA
+metadata:
+  name: kv/intermediate-ca-staging
+  description: secrets for intermediate-ca-staging CA
 spec:
   options:
     version: 1
 ---
 kind: KV
-name: kv/intermediate-ca-dev
-description: secrets for intermediate-ca-dev CA
+metadata:
+  name: kv/intermediate-ca-dev
+  description: secrets for intermediate-ca-dev CA
 spec:
   options:
     version: 1

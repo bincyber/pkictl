@@ -105,25 +105,27 @@ class TestUtils(unittest.TestCase):
     def test_get_validated_manifests(self):
         d = utils.read_manifest_file(PKI_MANIFEST_YAML)
 
-        roots, intermediates, kv_backends = utils.get_validated_manifests(d)
+        roots, intermediates, kv_engines = utils.get_validated_manifests(d)
 
         self.assertIsInstance(roots, list)
         self.assertEqual(len(roots), 2)
         self.assertIsInstance(intermediates, list)
         self.assertEqual(len(intermediates), 3)
-        self.assertIsInstance(kv_backends, list)
+        self.assertIsInstance(kv_engines, list)
 
-    def test_get_validated_manifests_missing_kv_backend(self):
+    def test_get_validated_manifests_missing_kv_engine(self):
         d = [{
             'kind': 'IntermediateCA',
-            'name': 'test-intermediate-ca',
+            'metadata': {
+                'name': 'test-intermediate-ca',
+            },
             'spec': {
                 'type': 'exported'
             }
         }]
         with self.assertRaises(SystemExit) as e:
             utils.get_validated_manifests(d)
-        self.assertEqual(e.exception.args[0], "[-] pkictl - Error: kv_backend not defined for exported intermediate CA: test-intermediate-ca")
+        self.assertEqual(e.exception.args[0], "[-] pkictl - Error: kv_engine not defined for exported intermediate CA: test-intermediate-ca")
 
     def test_get_validated_manifests_unsupported(self):
         d = [{'kind': 'AWS'}]
@@ -169,46 +171,62 @@ class TestUtils(unittest.TestCase):
         intermediates = [
             {
                 'kind': 'IntermediateCA',
-                'name': 'blah-ca',
-                'issuer': 'bar-ca'
+                'metadata': {
+                    'name': 'blah-ca',
+                    'issuer': 'bar-ca'
+                }
             },
             {
                 'kind': 'IntermediateCA',
-                'name': 'foo-ca',
-                'issuer': 'root-ca'
+                'metadata': {
+                    'name': 'foo-ca',
+                    'issuer': 'root-ca'
+                }
             },
             {
                 'kind': 'IntermediateCA',
-                'name': 'bar-ca',
-                'issuer': 'foo-ca'
+                'metadata': {
+                    'name': 'bar-ca',
+                    'issuer': 'foo-ca'
+                }
             },
             {
                 'kind': 'IntermediateCA',
-                'name': 'kungfoo-ca',
-                'issuer': 'root-ca'
+                'metadata': {
+                    'name': 'kungfoo-ca',
+                    'issuer': 'root-ca'
+                }
             }
         ]
 
         expected = [
             {
                 'kind': 'IntermediateCA',
-                'name': 'kungfoo-ca',
-                'issuer': 'root-ca'
+                'metadata': {
+                    'name': 'kungfoo-ca',
+                    'issuer': 'root-ca'
+                }
             },
             {
                 'kind': 'IntermediateCA',
-                'name': 'foo-ca',
-                'issuer': 'root-ca'
+                'metadata': {
+                    'name': 'foo-ca',
+                    'issuer': 'root-ca'
+                }
             },
             {
                 'kind': 'IntermediateCA',
-                'name': 'bar-ca',
-                'issuer': 'foo-ca'
+                'metadata': {
+                    'name': 'bar-ca',
+                    'issuer': 'foo-ca'
+                }
             },
             {
                 'kind': 'IntermediateCA',
-                'name': 'blah-ca',
-                'issuer': 'bar-ca'
+                'metadata': {
+                    'name': 'blah-ca',
+                    'issuer': 'bar-ca'
+                }
             }
         ]
 

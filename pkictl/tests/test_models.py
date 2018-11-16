@@ -14,8 +14,8 @@ class TestRootCA(unittest.TestCase):
 
         rootca = RootCA(self.baseurl, d)
 
-        self.assertEqual(rootca.name, d['name'])
-        self.assertEqual(rootca.description, d['description'])
+        self.assertEqual(rootca.name, d['metadata']['name'])
+        self.assertEqual(rootca.description, d['metadata']['description'])
         self.assertNotIn('subject', rootca.spec)
         self.assertIn('common_name', rootca.spec)
         self.assertEqual(rootca.ttl, d['spec']['ttl'])
@@ -33,9 +33,9 @@ class TestIntermediateCA(unittest.TestCase):
 
         intermediate_ca = IntermediateCA(self.baseurl, d)
 
-        self.assertEqual(intermediate_ca.name, d['name'])
-        self.assertEqual(intermediate_ca.description, d['description'])
-        self.assertEqual(intermediate_ca.issuer, d['issuer'])
+        self.assertEqual(intermediate_ca.name, d['metadata']['name'])
+        self.assertEqual(intermediate_ca.description, d['metadata']['description'])
+        self.assertEqual(intermediate_ca.issuer, d['metadata']['issuer'])
         self.assertNotIn('subject', intermediate_ca.spec)
         self.assertNotIn('policies', intermediate_ca.spec)
         self.assertNotIn('roles', intermediate_ca.spec)
@@ -55,8 +55,10 @@ class TestKeyValueEngine(unittest.TestCase):
 
         kv_engine = KeyValueEngine(self.baseurl, d)
 
-        self.assertEqual(kv_engine.name, d['name'])
-        self.assertEqual(kv_engine.url, f"{self.baseurl}/v1/sys/mounts/{d['name']}")
+        name = d['metadata']['name']
+
+        self.assertEqual(kv_engine.name, name)
+        self.assertEqual(kv_engine.url, f"{self.baseurl}/v1/sys/mounts/{name}")
 
         self.assertNotIn('kind', kv_engine.spec)
         self.assertNotIn('name', kv_engine.spec)

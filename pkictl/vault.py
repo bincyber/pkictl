@@ -112,12 +112,12 @@ class VaultClient:
     def store_ca_private_key(self, ca):
         """ stores the private key for a CA in the specified KV engine """
 
-        response = self.request(method='PUT', url=ca.kv_backend_url, headers=self.headers, json=ca.private_key)
+        response = self.request(method='PUT', url=ca.kv_engine_url, headers=self.headers, json=ca.private_key)
 
         if response.status_code == 204:
-            utils.output_message(f"Stored private key for '{ca.name}' in KV engine: {ca.kv_backend}")
+            utils.output_message(f"Stored private key for '{ca.name}' in KV engine: {ca.kv_engine}")
         else:
-            utils.exit_with_message(f"Failed to store private key for '{ca.name}' in KV engine: {ca.kv_backend}")
+            utils.exit_with_message(f"Failed to store private key for '{ca.name}' in KV engine: {ca.kv_engine}")
 
     def mount_pki_engine(self, ca):
         """ mounts a PKI secrets engine """

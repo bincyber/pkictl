@@ -4,7 +4,7 @@ FROM python:3.6-slim
 
 COPY Pipfile* /
 
-RUN set -ex && pip install pipenv --no-cache-dir --disable-pip-version-check \
+RUN set -ex && pip install pipenv==2018.10.13 --no-cache-dir --disable-pip-version-check \
     && pipenv --python 3.6 lock -r > requirements.txt
 
 # -----------------------------------------------------------------------------------------

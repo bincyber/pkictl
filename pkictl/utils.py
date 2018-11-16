@@ -54,7 +54,7 @@ def read_manifest_file(path: str) -> List[dict]:
 def get_validated_manifests(documents: List[dict]=[]) -> Tuple[List[dict], List[dict], List[dict]]:
     roots: List[dict]           = []
     intermediates: List[dict]   = []
-    kv_backends: List[dict]     = []
+    kv_engines: List[dict]     = []
 
     for i in documents:
         schema_type = i.get('kind')
@@ -63,21 +63,21 @@ def get_validated_manifests(documents: List[dict]=[]) -> Tuple[List[dict], List[
             roots.append(schemas.RootCASchema(i))
 
         elif schema_type == 'IntermediateCA':
-            ca_name     = i['name']
+            ca_name     = i['metadata']['name']
             ca_type     = i['spec'].get('type')
-            kv_backend  = i.get('kv_backend', None)
+            kv_engine  = i['metadata'].get('kv_engine', None)
 
-            if ca_type == 'exported' and kv_backend is None:
-                exit_with_message(f"kv_backend not defined for exported intermediate CA: {ca_name}")
+            if ca_type == 'exported' and kv_engine is None:
+                exit_with_message(f"kv_engine not defined for exported intermediate CA: {ca_name}")
 
             intermediates.append(schemas.IntermediateCASchema(i))
 
         elif schema_type == 'KV':
-            kv_backends.append(schemas.KeyValueSchema(i))
+            kv_engines.append(schemas.KeyValueSchema(i))
 
         else:
             exit_with_message("Unsupported schema defined in manifest file")
-    return roots, intermediates, kv_backends
+    return roots, intermediates, kv_engines
 
 
 def write_vault_master_keys(master_keys: List[str]=[], file: str='vault.log', debug: bool=False) -> None:
@@ -105,9 +105,9 @@ def write_vault_root_token(root_token: str=None, file: str='.vault-token', debug
             output_message(f"Successfully wrote the Vault root token to {file}")
 
 
-def get_index(array: List[dict], key: str, value: str) -> Optional[int]:
+def get_issuer_index(array: List[dict], key: str, value: str) -> Optional[int]:
     for i, d in enumerate(array):
-        if d[key] == value:
+        if d['metadata'][key] == value:
             return i
     return None
 
@@ -115,13 +115,11 @@ def get_index(array: List[dict], key: str, value: str) -> Optional[int]:
 def sort_intermediate_certificate_authorities(intermediates: List[dict]):
     sorted_intermediates: List[dict] = []
     for ca in intermediates:
-        issuer = ca.get('issuer')
+        issuer = ca['metadata']['issuer']
 
-        if issuer:
-            index  = get_index(intermediates, key='name', value=issuer)
-
-            if index is None:
-                sorted_intermediates.insert(0, ca)
-            else:
-                sorted_intermediates.insert(index, ca)
+        index = get_issuer_index(intermediates, key='name', value=issuer)
+        if index is None:
+            sorted_intermediates.insert(0, ca)
+        else:
+            sorted_intermediates.insert(index, ca)
     return sorted_intermediates

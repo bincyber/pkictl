@@ -6,26 +6,31 @@ _pkictl_ can be used to simplify the process of provisioning the PKI for Kuberne
 
 ## Provision the Certificate Authorities
 
-This example is for provisioning a control plane which uses external etcd. Define the Certificate Authorities to provision in the YAML manifest file:
+This example is for provisioning a control plane which uses external etcd. Define the Certificate Authorities to provision in the YAML manifest [file](docs/examples/kubernetes.yaml):
+
+    $ vim kubernetes.yaml
 
     ---
     kind: KV
-    name: kv/kube-ca
-    description: exported PKI secrets for the Kubernetes CA
+    metadata:
+      name: kv/kube-ca
+      description: exported PKI secrets for the Kubernetes CA
     spec:
       options:
         version: 1
     ---
     kind: KV
-    name: kv/kube-fp-ca
-    description: exported PKI secrets for the Kubernetes Front Proxy CA
+    metadata:
+      name: kv/kube-fp-ca
+      description: exported PKI secrets for the Kubernetes Front Proxy CA
     spec:
       options:
         version: 1
     ---
     kind: RootCA
-    name: pki/kube-root-ca
-    description: Kubernetes Root CA
+    metadata:
+      name: pki/kube-root-ca
+      description: Kubernetes Root CA
     spec:
       key_type: rsa
       key_bits: 4096
@@ -35,9 +40,10 @@ This example is for provisioning a control plane which uses external etcd. Defin
         common_name: Kubernetes Root Certificate Authority
     ---
     kind: IntermediateCA
-    name: pki/etcd-ca
-    description: Intermediate CA for etcd
-    issuer: pki/root-ca
+    metadata:
+      name: pki/etcd-ca
+      description: Intermediate CA for etcd
+      issuer: pki/root-ca
     spec:
       type: internal
       key_type: rsa
@@ -96,10 +102,11 @@ This example is for provisioning a control plane which uses external etcd. Defin
           }
     ---
     kind: IntermediateCA
-    name: pki/kube-ca
-    description: Kubernetes CA
-    issuer: pki/kube-root-ca
-    kv_backend: kv/kube-ca
+    metadata:
+      name: pki/kube-ca
+      description: Kubernetes CA
+      issuer: pki/kube-root-ca
+      kv_backend: kv/kube-ca
     spec:
       type: exported
       key_type: rsa
@@ -115,10 +122,11 @@ This example is for provisioning a control plane which uses external etcd. Defin
           }
     ---
     kind: IntermediateCA
-    name: pki/kube-fp-ca
-    description: Kubernetes Front Proxy CA
-    issuer: pki/kube-root-ca
-    kv_backend: kv/kube-fp-ca
+    metadata:
+      name: pki/kube-fp-ca
+      description: Kubernetes Front Proxy CA
+      issuer: pki/kube-root-ca
+      kv_backend: kv/kube-fp-ca
     spec:
       type: exported
       key_type: rsa
@@ -148,6 +156,44 @@ This example is for provisioning a control plane which uses external etcd. Defin
           path "kv/kube-fp-ca" {
             capabilities = ["read"]
           }
+
+
+    $ pkictl apply -f kubernetes.yaml
+
+    [*] pkictl - the Vault server has been initialized and is not sealed
+    [*] pkictl - Mounted KV secrets engine: kv/kube-ca
+    [*] pkictl - Mounted KV secrets engine: kv/kube-fp-ca
+    [*] pkictl - Mounted PKI secrets engine: pki/kube-root-ca
+    [*] pkictl - Generated Root CA: pki/kube-root-ca
+    [*] pkictl - Mounted PKI secrets engine: pki/kube-fp-ca
+    [*] pkictl - Created intermediate CA: pki/kube-fp-ca
+    [*] pkictl - Signed intermediate CA 'pki/kube-fp-ca' with issuing CA: pki/kube-root-ca
+    [*] pkictl - Set signed certificate for intermediate CA: pki/kube-fp-ca
+    [*] pkictl - Configured URLs for CA: pki/kube-fp-ca
+    [*] pkictl - Set CRL configuration for CA: pki/kube-fp-ca
+    [*] pkictl - Stored private key for 'pki/kube-fp-ca' in KV engine: kv/kube-fp-ca
+    [*] pkictl - Configured role 'client' for intermediate CA: pki/kube-fp-ca
+    [*] pkictl - Configured policy 'kv-kube-fp-ca-policy' for intermediate CA: pki/kube-fp-ca
+    [*] pkictl - Configured policy 'kube-fp-ca-client-policy' for intermediate CA: pki/kube-fp-ca
+    [*] pkictl - Mounted PKI secrets engine: pki/kube-ca
+    [*] pkictl - Created intermediate CA: pki/kube-ca
+    [*] pkictl - Signed intermediate CA 'pki/kube-ca' with issuing CA: pki/kube-root-ca
+    [*] pkictl - Set signed certificate for intermediate CA: pki/kube-ca
+    [*] pkictl - Configured URLs for CA: pki/kube-ca
+    [*] pkictl - Set CRL configuration for CA: pki/kube-ca
+    [*] pkictl - Stored private key for 'pki/kube-ca' in KV engine: kv/kube-ca
+    [*] pkictl - Configured policy 'kv-kube-ca-policy' for intermediate CA: pki/kube-ca
+    [*] pkictl - Mounted PKI secrets engine: pki/etcd-ca
+    [*] pkictl - Created intermediate CA: pki/etcd-ca
+    [*] pkictl - Signed intermediate CA 'pki/etcd-ca' with issuing CA: pki/kube-root-ca
+    [*] pkictl - Set signed certificate for intermediate CA: pki/etcd-ca
+    [*] pkictl - Configured URLs for CA: pki/etcd-ca
+    [*] pkictl - Set CRL configuration for CA: pki/etcd-ca
+    [*] pkictl - Configured role 'peer' for intermediate CA: pki/etcd-ca
+    [*] pkictl - Configured role 'server' for intermediate CA: pki/etcd-ca
+    [*] pkictl - Configured role 'client' for intermediate CA: pki/etcd-ca
+    [*] pkictl - Configured policy 'etcd-ca-server-policy' for intermediate CA: pki/etcd-ca
+    [*] pkictl - Configured policy 'etcd-ca-client-policy' for intermediate CA: pki/etcd-ca
 
 The above will create:
 - a Root CA for the Kubernetes cluster with a TTL of 10 years

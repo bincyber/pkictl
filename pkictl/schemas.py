@@ -4,8 +4,10 @@ MOUNT_PATH_REGEX = r'^(?![-\/])[a-z0-9-_\/]+(?<![-\/])$'
 
 RootCASchema = Schema({
     Required('kind'): All('RootCA', msg="Must be 'RootCA'"),
-    Required('name'): Match(MOUNT_PATH_REGEX, msg="Must be lowercase alphanumberic string"),
-    Required('description'): str,
+    Required('metadata'): {
+        Required('name'): Match(MOUNT_PATH_REGEX, msg="Must be lowercase alphanumberic string"),
+        Required('description'): str
+    },
     Required('spec'): {
         Required('key_type'): Any('rsa', 'ec', msg="Must be 'rsa' or 'ec'"),
         Required('key_bits'): Range(min=256, max=4096),
@@ -24,10 +26,12 @@ RootCASchema = Schema({
 
 IntermediateCASchema = Schema({
     Required('kind'): All('IntermediateCA', msg="Must be 'IntermediateCA'"),
-    Required('name'): Match(MOUNT_PATH_REGEX, msg="Must be lowercase alphanumberic string"),
-    Required('description'): str,
-    Required('issuer'): Match(MOUNT_PATH_REGEX, msg="Must be lowercase alphanumberic string"),
-    Optional('kv_backend'): Match(MOUNT_PATH_REGEX, msg="Must be lowercase alphanumberic string"),
+    Required('metadata'): {
+        Required('name'): Match(MOUNT_PATH_REGEX, msg="Must be lowercase alphanumberic string"),
+        Required('description'): str,
+        Required('issuer'): Match(MOUNT_PATH_REGEX, msg="Must be lowercase alphanumberic string"),
+        Optional('kv_engine'): Match(MOUNT_PATH_REGEX, msg="Must be lowercase alphanumberic string")
+    },
     Required('spec'): {
         Required('type'): Any('internal', 'exported', msg="Must be 'internal' or 'exported'"),
         Required('key_type'): Any('rsa', 'ec', msg="Must be 'rsa' or 'ec'"),
@@ -73,8 +77,10 @@ IntermediateCASchema = Schema({
 
 KeyValueSchema = Schema({
     Required('kind'): All('KV', msg="Must be 'KV'"),
-    Required('name'): Match(MOUNT_PATH_REGEX, msg="Must be lowercase alphanumberic string"),
-    Required('description'): str,
+    Required('metadata'): {
+        Required('name'): Match(MOUNT_PATH_REGEX, msg="Must be lowercase alphanumberic string"),
+        Required('description'): str
+    },
     Required('spec'): {
         Optional("config"): {
             Optional('default_lease_ttl', default='8766h'): Match(r'\d+[hms]'),
