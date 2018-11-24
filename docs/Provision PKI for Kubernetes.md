@@ -1,12 +1,14 @@
-# Provision PKI for Kubernetes
+# Provisioning the Kubernetes PKI with pkictl
 
-[kubeadm](https://kubernetes.io/docs/setup/independent/high-availability/) can be used to deploy a HA Kubernetes cluster with multiple master nodes. However, this requires bootstrapping the first Kubernetes master node with `kubeadm init` so that the TLS certificates are created and then the certificates and private keys need to be manually copied to the other master nodes. See the documentation on the PKI certificates that kubeadm creates: https://kubernetes.io/docs/setup/certificates/. Julia Evans also has a fantastic blog post on the different Certificate Authorities that exist in a Kubernetes cluster: https://jvns.ca/blog/2017/08/05/how-kubernetes-certificates-work/.
+[kubeadm](https://kubernetes.io/docs/setup/independent/high-availability/) can be used to deploy a highly available Kubernetes cluster with multiple master nodes. However, this requires bootstrapping the first Kubernetes master node with `kubeadm init` so that the TLS certificates are created and then the certificates and private keys need to be manually copied to the other master nodes. Refer to the Kubernetes documentation on the PKI certificates that kubeadm creates: https://kubernetes.io/docs/setup/certificates/. Julia Evans also has a fantastic blog post on the different Certificate Authorities that exist in a Kubernetes cluster: https://jvns.ca/blog/2017/08/05/how-kubernetes-certificates-work/.
 
-_pkictl_ can be used to simplify the process of provisioning the PKI for Kubernetes and remove the need to manually copy certificates between the control plane nodes.
+_pkictl_ simplifies the process of provisioning the PKI for Kubernetes and removes the need to manually copy certificates and private keys between the control plane nodes.
 
 ## Provision the Certificate Authorities
 
-This example is for provisioning a control plane which uses external etcd. Define the Certificate Authorities to provision in the YAML manifest [file](docs/examples/kubernetes.yaml):
+This example will demonstrate provisioning a control plane which uses an external etcd cluster.
+
+Define the Certificate Authorities to provision in the YAML manifest [file](examples/kubernetes.yaml):
 
     $ vim kubernetes.yaml
 
@@ -197,6 +199,7 @@ This example is for provisioning a control plane which uses external etcd. Defin
 
 The above will create:
 - a Root CA for the Kubernetes cluster with a TTL of 10 years
+
 - an Intermediate CA for etcd with a TTL of 5 years
   - a Role named `peer` to generate/sign TLS certificates for the etcd [peer server](https://coreos.com/etcd/docs/latest/v2/configuration.html#--peer-cert-file) for any subdomains on etcd.example.com
   - a Role named `server` to generate/sign TLS certificates for the etcd [client server](https://coreos.com/etcd/docs/latest/v2/configuration.html#--cert-file) for any subdomains on etcd.example.com
@@ -204,21 +207,26 @@ The above will create:
   - a Policy mapped to the `peer` and `server` Roles and a Policy mapped to the `client` Role
 
 - an Intermediate CA for the Kubernetes API server with a TTL of 5 years
-  - this CA issues client certificates used to permit kubelet, controller manager, and scheduler to authenticate to the Kubernetes API server
-  - the private key for this intermediate CA is exported and stored in the KV engine kv/kube-ca so that it can be retrieved by the Kubernetes master nodes
   - a Policy permitting the CA private key to be retrieved from the KV engine
-  - while a Role and Policy can be defined for this CA, it's simpler to place the CA cert and private key on the master nodes and leave the generation of the actual TLS certificates to kubeadm
 
 - an Intermediate CA for the Kubernetes [Aggregation layer](https://kubernetes.io/docs/tasks/access-kubernetes-api/configure-aggregation-layer/) with a TTL of 5 years
-  - the private key for this intermediate CA is exported and stored in the KV engine kv/kube-fp-ca so that it can be retrieved by the Kubernetes master nodes
   - a Role named `client` to generate or sign TLS client certificates for the front-proxy
   - a Policy mapped to the `client` Role
+
+The Kubernetes CA issues client certificates to allow the kubelet, controller manager, and scheduler to authenticate to the Kubernetes API server.
+  - the private key for this CA is exported and stored in the KV engine `kv/kube-ca` so that it can be retrieved by the Kubernetes master nodes
+  - while a Role and Policy for issuing certificates can be defined for this CA, it's simpler to retrieve the CA cert and private key on the master nodes and leave the generation of the TLS certificates to `kubeadm init`
+
+The private key of the Aggregation Layer CA is exported and stored in the KV engine `kv/kube-fp-ca` so that it can be retrieved by the Kubernetes master nodes.
 
 ## Programmatically retrieve certificates
 
 After the CAs are provisioned in Vault, certificates can be programmatically retrieved by the Kubernetes master nodes. This example will show how this can be done using Ansible. We will assume that the external etcd cluster is already operational.
 
 Obtain a Vault token for each policy created in the previous step:
+
+    # token to retrieve etcd server/peer certificates
+    $ vault token create -policy=etcd-ca-server-policy -ttl=1h
 
     # token to retrieve etcd client certificates
     $ vault token create -policy=etcd-ca-client-policy -ttl=1h

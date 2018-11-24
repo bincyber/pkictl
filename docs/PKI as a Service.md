@@ -4,7 +4,7 @@ Sébastien Braun of Hashicorp has an excellent guide to running PKI as a Service
 
 _pkictl_ can be used to ease and simplify the initial steps of configuring the PKI secrets in Vault.
 
-Create the YAML manifest file:
+Create the YAML manifest [file](examples/pki-as-a-service.yaml):
 
 	$ vim pki-as-a-service.yaml
 
