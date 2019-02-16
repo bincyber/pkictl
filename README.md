@@ -1,8 +1,9 @@
 # pkictl
 
+[![License](https://img.shields.io/badge/License-MPL-blue.svg)](https://www.gnu.org/licenses/agpl-3.0.en.html)
 [![Python](https://img.shields.io/badge/Python-3.6+-blue.svg)](#)
-[![Version](https://img.shields.io/badge/version-0.2.0-green.svg)](#)
-[![License](https://img.shields.io/badge/license-MPL-blue.svg)](https://www.gnu.org/licenses/agpl-3.0.en.html)
+[![Version](https://img.shields.io/badge/Version-0.2.1-green.svg)](#)
+[![Docker](https://images.microbadger.com/badges/image/bincyber/pkictl.svg)](https://microbadger.com/images/bincyber/pkictl)
 [![Coverage Status](https://coveralls.io/repos/github/bincyber/pkictl/badge.svg?branch=master)](https://coveralls.io/github/bincyber/pkictl?branch=master)
 [![CircleCI](https://circleci.com/gh/bincyber/pkictl.svg?style=svg)](https://circleci.com/gh/bincyber/pkictl)
 
@@ -28,7 +29,7 @@ _pkictl_ can be installed via pip:
 
 ### Compatibility
 
-_pkictl_ has been tested against versions 0.10.X and 0.11.X of Vault.
+_pkictl_ has been tested against versions 0.10.X, 0.11.X, and 1.0.X of Vault.
 
 ## Usage
 

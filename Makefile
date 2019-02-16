@@ -1,5 +1,5 @@
 VERSION=$(shell awk -F\" '/version =/ { print $$2 }' setup.py)
-VAULT_VERSION=0.11.4
+VAULT_VERSION=1.0.3
 VAULT_URL=https://localhost:8200
 PKICTL=python -m pkictl
 E2E_YAML_FILE=pkictl/tests/manifests/pki.yaml
@@ -16,7 +16,7 @@ help:
 	@echo "  e2e-test            to run end-to-end tests"
 
 dev:
-	pipenv install --python 3.6 --dev
+	pipenv sync --dev
 
 lint:
 	flake8 --statistics pkictl/*
@@ -53,6 +53,12 @@ upload-package:
 
 build-container:
 	docker build -t pkictl:$(VERSION) .
+
+tag-container:
+	docker tag pkictl:$(VERSION) bincyber/pkictl:$(VERSION)
+
+upload-container:
+	docker push bincyber/pkictl:$(VERSION)
 
 build-vault-container:
 	docker build --build-arg VAULT_VERSION=$(VAULT_VERSION) -t vault:$(VAULT_VERSION) pkictl/tests/e2e

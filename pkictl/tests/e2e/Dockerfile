@@ -2,7 +2,7 @@
 
 FROM debian:9-slim
 
-ARG VAULT_VERSION=0.11.4
+ARG VAULT_VERSION=1.0.3
 
 RUN set -ex && apt-get update -qq \
     && apt-get install -y --no-install-recommends unzip wget openssl ca-certificates \
