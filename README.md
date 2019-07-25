@@ -100,7 +100,7 @@ Create a [manifest file](docs/examples/manifest.yaml):
       name: demo-intermediate-ca
       description: pkictl demo Intermediate CA
       issuer: demo-root-ca
-      kv_backend: demo-kv-engine
+      kv_engine: demo-kv-engine
     spec:
       type: exported
       key_type: rsa
@@ -179,16 +179,16 @@ Create PKI secrets from the YAML manifest file:
     $ pkictl apply -u https://localhost:8200 -f manifest.yaml
 
     [*] pkictl - the Vault server has been initialized and is not sealed
-    [*] pkictl - Enabled KV backend: demo-kv-engine
-    [*] pkictl - Enabled PKI backend: demo-root-ca
+    [*] pkictl - Mounted KV secrets engine: demo-kv-engine
+    [*] pkictl - Mounted PKI secrets engine: demo-root-ca
     [*] pkictl - Generated Root CA: demo-root-ca
-    [*] pkictl - Enabled PKI backend: demo-intermediate-ca
+    [*] pkictl - Mounted PKI secrets engine: demo-intermediate-ca
     [*] pkictl - Created intermediate CA: demo-intermediate-ca
     [*] pkictl - Signed intermediate CA 'demo-intermediate-ca' with issuing CA: demo-root-ca
     [*] pkictl - Set signed certificate for intermediate CA: demo-intermediate-ca
     [*] pkictl - Configured URLs for CA: demo-intermediate-ca
     [*] pkictl - Set CRL configuration for CA: demo-intermediate-ca
-    [*] pkictl - Stored private key for 'demo-intermediate-ca' in KV backend: demo-kv-engine
+    [*] pkictl - Stored private key for 'demo-intermediate-ca' in KV engine: demo-kv-engine
     [*] pkictl - Configured role 'server' for intermediate CA: demo-intermediate-ca
     [*] pkictl - Configured role 'client' for intermediate CA: demo-intermediate-ca
     [*] pkictl - Configured policy 'demo-intermediate-ca-pkey' for intermediate CA: demo-intermediate-ca
